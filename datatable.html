@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data table</title>
+
+    <link rel="stylesheet" href="//cdn.webix.com/edge/webix.css" type="text/css">
+    <script src="//cdn.webix.com/edge/webix.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="//cdn.webix.com/materialdesignicons/5.8.95/css/materialdesignicons.min.css" type="text/css" charset="utf-8">
+
+    <style>
+        .hightlight {
+            background-color: red;
+            color: white;
+        }
+        
+        .myhover {
+            background-color: rgb(189, 189, 189);
+        }
+        
+        .mystyle .webix_hcell {
+            background-color: black;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .mystyle .webix_column {
+            background-color: white;
+            color: black
+        }
+    </style>
+</head>
+
+<body>
+    <!-- <div id="box"></div> -->
+
+    <script type="text/javascript" src="data.js"></script>
+    <script type="text/javascript" charset="utf-8">
+        function add() {
+            var kolom = $$("mytable").config.columns
+            kolom.splice(2, 0, {
+                id: "c" + webix.uid(),
+                header: [{
+                    text: "New Header",
+                    editable: true,
+                    editaction: "dblclick"
+                }]
+            })
+            $$("mytable").refreshColumns();
+        }
+
+        function remove() {
+            var kolom = $$("mytable").config.columns
+            kolom.splice(2, 1)
+            $$("mytable").refreshColumns()
+        }
+
+        function refresh() {
+            var kolom = $$("mytable").config.columns = [{
+                id: "id",
+                header: [{
+                    text: "No"
+                }, {
+                    text: "<span class='webix-icon fa fa-filter'></span>"
+                }],
+                sort: "int",
+                adjust: true,
+                width: 20,
+                sort: "int"
+            }, {
+                id: "Nama",
+                header: [{
+                    text: "Nama"
+                }, {
+                    content: "textFilter"
+                }],
+                // fillspace: true,
+                adjust: "data",
+                sort: "text",
+                editor: "text"
+            }, {
+                id: "Kelas",
+                header: [{
+                    text: "Kelas"
+                }, {
+                    content: "selectFilter"
+                }],
+                css: {
+                    "text-align": "center"
+                },
+                options: ["XII SIJA 1", "XII SIJA 2", "XII SIJA 3", "XII SIJA 4", "XII SIJA 5"],
+                editor: "select"
+            }, {
+                id: "Jurusan",
+                header: [{
+                    text: "Jurusan"
+                }]
+            }, {
+                id: "MTK",
+                header: [{
+                    text: "MTK"
+                }, {
+                    content: "numberFilter"
+                }],
+                adjust: true,
+                footer: [{
+                    content: "summColumn",
+                    tooltip: function(obj) {
+                        let nilai = $$("mytable").getHeaderContent(obj.contentId).getValue();
+                        let rata = nilai / 6
+                        return "Rata rata = " + rata
+                    }
+                }]
+            }, {
+                id: "BINDO",
+                adjust: true,
+                header: [{
+                    text: "BINDO"
+                }, {
+                    content: "numberFilter"
+                }],
+                footer: [{
+                    content: "summColumn",
+                    tooltip: function(obj) {
+                        let nilai = $$("mytable").getHeaderContent(obj.contentId).getValue();
+                        let rata = nilai / 6
+                        return "Rata rata = " + rata
+                    }
+                }]
+            }, {
+                id: "BING",
+                adjust: true,
+
+                header: [{
+                    text: "BING"
+                }, {
+                    content: "numberFilter"
+                }],
+                editor: "number",
+                footer: [{
+                    content: "summColumn",
+                    tooltip: function(obj) {
+                        let nilai = $$("mytable").getHeaderContent(obj.contentId).getValue();
+                        let rata = nilai / 6
+                        return "Rata rata = " + rata
+                    }
+                }]
+            }, {
+                header: [{
+                    text: "Raw"
+                }],
+                template: function(obj) {
+                    return obj.tanggallahir.toString()
+                }
+            }, {
+                header: "Date",
+                id: "tanggallahir",
+                format: webix.i18n.dateFormatStr
+            }, {
+                header: "Long Date",
+                id: "tanggallahir",
+                format: webix.i18n.longDateFormatStr
+            }, {
+                header: [{
+                    text: "Action"
+                }],
+                template: "{common.hapus} {common.edit}",
+                width: 60
+            }]
+            $$("mytable").refreshColumns()
+        }
+
+        function addData() {
+            var data = $$("myform").getValues()
+            var idakhir = $$("mytable").getLastId()
+
+            $$("mytable").add({
+                id: idakhir + 1,
+                Nama: data.Nama,
+                Kelas: data.Kelas,
+                Jurusan: data.Jurusan,
+                MTK: data.MTK,
+                BING: data.BING,
+                BINDO: data.BINDO,
+                tanggallahir: data.tanggallahir
+            }, idakhir)
+
+            $$("mytable").refreshColumns()
+            $$("mytable").attachEvent("onAfterAdd", function(id, index) {
+                webix.message("New record was added!");
+            });
+        }
+
+        function setType(mode) {
+            var new_one = "";
+            switch (mode) {
+                case "a":
+                    new_one = "{common.pages()}";
+                    break;
+                case "b":
+                    new_one = "{common.first()}{common.pages()}{common.last()}";
+                    break;
+                case "c":
+                    new_one = "Page {common.page()} from #limit# {common.prev()}{common.next()}";
+                    break;
+            }
+            $$("pager").define("template", new_one);
+            $$("pager").render();
+        }
+
+        window.switchLocale = function(locale) {
+            webix.i18n.setLocale(locale)
+            $$("mytable").refreshColumns()
+        }
+
+        var mytoolbar = {
+            view: "toolbar",
+            paddingY: 1,
+            paddingX: 30,
+            height: 60,
+            elements: [{
+                view: "icon",
+                icon: "mdi mdi-menu",
+                click: function() {
+                    $$("mysidebar").toggle()
+                }
+            }, {
+                view: "label",
+                label: "Hallo Zinedine"
+            }, {
+                gravity: 5
+            }, {}, {
+                view: "icon",
+                icon: "mdi mdi-email",
+                badge: 10
+            }, {
+                view: "icon",
+                icon: "mdi mdi-account"
+            }, {
+                view: "icon",
+                icon: "mdi mdi-cogs"
+            }]
+        }
+
+        var menu_data = [{
+            id: "dashboard",
+            icon: "mdi mdi-view-dashboard",
+            value: "Dashboards",
+            data: [{
+                id: "dashboard1",
+                value: "Dashboard 1"
+            }, {
+                id: "dashboard2",
+                value: "Dashboard 2"
+            }]
+        }, {
+            id: "layouts",
+            icon: "mdi mdi-view-column",
+            value: "Layouts",
+            data: [{
+                id: "accordions",
+                value: "Accordions"
+            }, {
+                id: "portlets",
+                value: "Portlets"
+            }]
+        }, {
+            id: "tables",
+            icon: "mdi mdi-table",
+            value: "Data Tables",
+            data: [{
+                id: "tables1",
+                value: "Datatable"
+            }, {
+                id: "tables2",
+                value: "TreeTable"
+            }, {
+                id: "tables3",
+                value: "Pivot"
+            }]
+        }, {
+            id: "uis",
+            icon: "mdi mdi-puzzle",
+            value: "UI Components",
+            data: [{
+                id: "dataview",
+                value: "DataView"
+            }, {
+                id: "list",
+                value: "List"
+            }, {
+                id: "menu",
+                value: "Menu"
+            }, {
+                id: "tree",
+                value: "Tree"
+            }]
+        }, {
+            id: "tools",
+            icon: "mdi mdi-calendar",
+            value: "Tools",
+            data: [{
+                id: "kanban",
+                value: "Kanban Board"
+            }, {
+                id: "pivot",
+                value: "Pivot Chart"
+            }, {
+                id: "scheduler",
+                value: "Calendar"
+            }]
+        }, {
+            id: "forms",
+            icon: "mdi mdi-pencil",
+            value: "Forms",
+            data: [{
+                id: "buttons",
+                value: "Buttons"
+            }, {
+                id: "selects",
+                value: "Select boxes"
+            }, {
+                id: "inputs",
+                value: "Inputs"
+            }]
+        }, {
+            id: "demo",
+            icon: "mdi mdi-book",
+            value: "Documentation"
+        }];
+        var sidebar = {
+            view: "sidebar",
+            id: "mysidebar",
+            width: 200,
+            collapsed: true,
+            // activeTitle: true,
+            // titleHeight:50,
+            multipleOpen: true,
+            position: "right",
+            data: menu_data
+        }
+        var mytable = {
+            view: "datatable",
+            autoheight: true,
+            scheme: {
+                $change: function(item) {
+                    if (item.MTK < 75 | item.BING < 75 | item.BINDO < 75) {
+                        item.$css = "hightlight"
+                    }
+                }
+            },
+            on: {
+                onBeforeLoad: function() {
+                    this.showOverlay("Loading...");
+                },
+                onAfterLoad: function() {
+                    this.hideOverlay();
+                }
+            },
+
+
+            id: "mytable",
+            css: "webix_header_border webix_column_border webix_datatable",
+            css: "mystyle",
+            tooltip: true,
+            // columnWidth: 150,
+            scroll: true,
+            autoConfig: true,
+            // autowidth: true,
+            borderless: true,
+            form: "myform",
+            scroll: true,
+            footer: true,
+            select: true,
+            hover: "myhover",
+            resizeColumn: true,
+            resizeRow: true,
+            headermenu: true,
+            drag: true,
+            columns: [{
+                id: "id",
+                header: [{
+                    text: "No"
+                }, {
+                    text: "<span class='webix-icon fa fa-filter'></span>"
+                }],
+                sort: "int",
+                adjust: true,
+                width: 20,
+                sort: "int"
+            }, {
+                id: "Nama",
+                header: [{
+                    text: "Nama"
+                }, {
+                    content: "textFilter"
+                }],
+                // fillspace: true,
+                adjust: "data",
+                sort: "text",
+                editor: "text"
+            }, {
+                id: "Kelas",
+                header: [{
+                    text: "Kelas"
+                }, {
+                    content: "selectFilter"
+                }],
+                css: {
+                    "text-align": "center"
+                },
+                options: ["XII SIJA 1", "XII SIJA 2", "XII SIJA 3", "XII SIJA 4", "XII SIJA 5"],
+                editor: "select"
+            }, {
+                id: "Jurusan",
+                header: [{
+                    text: "Jurusan"
+                }]
+            }, {
+                id: "MTK",
+                header: [{
+                    text: "MTK"
+                }, {
+                    content: "numberFilter"
+                }],
+                adjust: true,
+                footer: [{
+                    content: "summColumn",
+                    tooltip: function(obj) {
+                        let nilai = $$("mytable").getHeaderContent(obj.contentId).getValue();
+                        let rata = nilai / 6
+                        return "Rata rata = " + rata
+                    }
+                }]
+            }, {
+                id: "BINDO",
+                adjust: true,
+                header: [{
+                    text: "BINDO"
+                }, {
+                    content: "numberFilter"
+                }],
+                footer: [{
+                    content: "summColumn",
+                    tooltip: function(obj) {
+                        let nilai = $$("mytable").getHeaderContent(obj.contentId).getValue();
+                        let rata = nilai / 6
+                        return "Rata rata = " + rata
+                    }
+                }]
+            }, {
+                id: "BING",
+                adjust: true,
+
+                header: [{
+                    text: "BING"
+                }, {
+                    content: "numberFilter"
+                }],
+                editor: "number",
+                footer: [{
+                    content: "summColumn",
+                    tooltip: function(obj) {
+                        let nilai = $$("mytable").getHeaderContent(obj.contentId).getValue();
+                        let rata = nilai / 6
+                        return "Rata rata = " + rata
+                    }
+                }]
+            }, {
+                header: [{
+                    text: "Raw"
+                }],
+                template: function(obj) {
+                    return obj.tanggallahir.toString()
+                }
+            }, {
+                header: "Date",
+                id: "tanggallahir",
+                format: webix.i18n.dateFormatStr
+            }, {
+                header: "Long Date",
+                id: "tanggallahir",
+                format: webix.i18n.longDateFormatStr
+            }],
+            data: data,
+            type: {
+                hapus: "<span class='webix-icon fa fa-trash'></span>",
+                edit: "<span class='webix-icon fa fa-pencil'></span>"
+            },
+            pager: "pager",
+            editable: true,
+            editaction: "dblclick"
+        }
+
+        var mypager = {
+            cols: [{
+                view: "pager",
+                id: "pager",
+                size: 3,
+                animate: {
+                    direction: "top",
+                    // type: "flip"
+                },
+                css: "pager",
+                // template: "{common.prev()} {common.pages()} {common.next()}"
+            }, {
+                view: "button",
+                autowidth: true,
+                click: () => setType("a"),
+                value: 'Style A'
+            }, {
+                view: "button",
+                autowidth: true,
+                click: () => setType("b"),
+                value: 'Style B'
+            }, {
+                view: "button",
+                autowidth: true,
+                click: () => setType("c"),
+                value: 'Style C'
+            }, {
+                view: "richselect",
+                options: [{
+                    value: "ja-JP"
+                }, {
+                    value: "ru-RU"
+                }, {
+                    value: "fr-FR"
+                }, ],
+                on: {
+                    onChange: function() {
+                        window.switchLocale(this.getValue())
+                    }
+                }
+            }, {
+                view: "button",
+                label: "Add Column",
+                click: add
+            }, {
+                view: "button",
+                label: "Remove Column",
+                css: "webix_danger",
+                click: remove
+            }, {
+                view: "button",
+                label: "Refresh Column",
+                click: refresh
+            }, {}]
+        }
+
+        var myform = {
+            view: "form",
+            width: 400,
+            elementsConfig: {
+                labelWidth: 100
+            },
+            id: "myform",
+            elements: [{
+                view: "text",
+                label: "Nama",
+                name: "Nama"
+            }, {
+                view: "combo",
+                name: "Kelas",
+                options: [{
+                    value: "XII SIJA 1"
+                }, {
+                    value: "XII SIJA 2"
+                }, {
+                    value: "XII SIJA 3"
+                }, {
+                    value: "XII SIJA 4"
+                }, {
+                    value: "XII SIJA 5"
+                }],
+                label: "Kelas"
+            }, {
+                view: "richselect",
+                name: "Jurusan",
+                options: [{
+                    value: "SIJA"
+                }, {
+                    value: "TFLM"
+                }, {
+                    value: "KGSP"
+                }, {
+                    value: "TMPO"
+                }, {
+                    value: "TFLM"
+                }, {
+                    value: "TTL"
+                }, {
+                    value: "TEDK"
+                }],
+                label: "Jurusan"
+            }, {
+                cols: [{
+                    view: "text",
+                    type: "number",
+                    placeholder: "MTK",
+                    name: "MTK",
+                    max: 100
+                }, {
+                    view: "text",
+                    type: "number",
+                    placeholder: "BING",
+                    name: "BING",
+                    max: 100
+                }, {
+                    view: "text",
+                    type: "number",
+                    placeholder: "BINDO",
+                    name: "BINDO",
+                    max: 100
+                }]
+            }, {
+                view: "datepicker",
+                name: "tanggallahir",
+                label: "Tanggal Lahir"
+            }, {
+                view: "button",
+                label: "Add data",
+                type: "icon",
+                icon: "mdi mdi-plus",
+                css: "wbx_primary",
+                click: addData
+            }, {
+                view: "button",
+                label: "Edit Data",
+                type: "icon",
+                icon: "mdi mdi-pencil",
+                css: "webix_secondary",
+                click: function(id) {
+                    var test = $$("mytable").getSelectedId()
+                    if (test) {
+                        var form = $$(id).getFormView()
+                        var values = form.getValues()
+                        $$("mytable").updateItem(values.id, values)
+
+                        $$("mytable").onChange(webix.message("Edit data success!"))
+
+                    } else return webix.message("No data is selected!")
+                }
+            }, {
+                view: "button",
+                label: "Remove Data",
+                type: "icon",
+                icon: "mdi mdi-minus",
+                css: "webix_danger",
+                click: function() {
+                    var id = $$("mytable").getSelectedId()
+                    if (id) $$("mytable").remove(id.row)
+                    else return webix.message("No Data is Selected !")
+                }
+            }]
+        }
+
+        webix.ui({
+            view: "popup",
+            id: "mypopup",
+            body: [{
+                view: "form",
+                id: "editform",
+                elements: [{
+                    view: "text",
+                    name: "Nama"
+                }]
+            }]
+        })
+
+        webix.ready(() => {
+            webix.ui({
+                view: "scrollview",
+                scrollX: true,
+                body: {
+                    rows: [
+                        mytoolbar, {
+                            cols: [
+                                sidebar, {
+                                    rows: [
+                                        mytable,
+                                        mypager
+                                    ]
+                                },
+                                myform
+                            ]
+                        }
+                    ]
+                }
+            })
+        })
+    </script>
+</body>
+
+</html>
