@@ -9,8 +9,14 @@
 
     <link rel="stylesheet" href="//cdn.webix.com/edge/webix.css" type="text/css">
     <script src="//cdn.webix.com/edge/webix.js" type="text/javascript"></script>
-    <link rel="stylesheet" href="//cdn.webix.com/materialdesignicons/5.8.95/css/materialdesignicons.min.css" type="text/css" charset="utf-8">
 
+    <!-- <link rel="stylesheet" type="text/css" href="http://cdn.webix.com/components/sidebar/sidebar.css" charset="utf-8">
+    <script text="text/javascript" src="http://cdn.webix.com/components/sidebar/sidebar.js" charset="utf-8"></script> -->
+
+    <link rel="stylesheet" href="//cdn.webix.com/materialdesignicons/5.8.95/css/materialdesignicons.min.css" type="text/css" charset="utf-8">
+    <script type="text/javascript" src="data.js"></script>
+    <script type="text/javascript" src="menu.js"></script>
+    <!-- <script src="form-basic.js" type="text/javascript"></script> -->
     <style>
         .hightlight {
             background-color: red;
@@ -37,7 +43,6 @@
 <body>
     <!-- <div id="box"></div> -->
 
-    <script type="text/javascript" src="data.js"></script>
     <script type="text/javascript" charset="utf-8">
         function add() {
             var kolom = $$("mytable").config.columns
@@ -219,7 +224,7 @@
         var mytoolbar = {
             view: "toolbar",
             paddingY: 1,
-            paddingX: 30,
+            // paddingX: 10,
             height: 60,
             elements: [{
                 view: "icon",
@@ -244,103 +249,25 @@
                 icon: "mdi mdi-cogs"
             }]
         }
-
-        var menu_data = [{
-            id: "dashboard",
-            icon: "mdi mdi-view-dashboard",
-            value: "Dashboards",
-            data: [{
-                id: "dashboard1",
-                value: "Dashboard 1"
-            }, {
-                id: "dashboard2",
-                value: "Dashboard 2"
-            }]
-        }, {
-            id: "layouts",
-            icon: "mdi mdi-view-column",
-            value: "Layouts",
-            data: [{
-                id: "accordions",
-                value: "Accordions"
-            }, {
-                id: "portlets",
-                value: "Portlets"
-            }]
-        }, {
-            id: "tables",
-            icon: "mdi mdi-table",
-            value: "Data Tables",
-            data: [{
-                id: "tables1",
-                value: "Datatable"
-            }, {
-                id: "tables2",
-                value: "TreeTable"
-            }, {
-                id: "tables3",
-                value: "Pivot"
-            }]
-        }, {
-            id: "uis",
-            icon: "mdi mdi-puzzle",
-            value: "UI Components",
-            data: [{
-                id: "dataview",
-                value: "DataView"
-            }, {
-                id: "list",
-                value: "List"
-            }, {
-                id: "menu",
-                value: "Menu"
-            }, {
-                id: "tree",
-                value: "Tree"
-            }]
-        }, {
-            id: "tools",
-            icon: "mdi mdi-calendar",
-            value: "Tools",
-            data: [{
-                id: "kanban",
-                value: "Kanban Board"
-            }, {
-                id: "pivot",
-                value: "Pivot Chart"
-            }, {
-                id: "scheduler",
-                value: "Calendar"
-            }]
-        }, {
-            id: "forms",
-            icon: "mdi mdi-pencil",
-            value: "Forms",
-            data: [{
-                id: "buttons",
-                value: "Buttons"
-            }, {
-                id: "selects",
-                value: "Select boxes"
-            }, {
-                id: "inputs",
-                value: "Inputs"
-            }]
-        }, {
-            id: "demo",
-            icon: "mdi mdi-book",
-            value: "Documentation"
-        }];
         var sidebar = {
             view: "sidebar",
             id: "mysidebar",
             width: 200,
             collapsed: true,
             activeTitle: true,
-            // titleHeight:50,
+            titleHeight: 50,
             multipleOpen: true,
             position: "right",
-            data: menu_data
+            data: menu_data,
+            on: {
+                onAfterSelect: function(id) {
+                    $$("multiview").setValue(id)
+                }
+            },
+            ready: function() {
+                var firstItem = this.getFirstId()
+                this.select(firstItem)
+            }
         }
         var mytable = {
             view: "datatable",
@@ -538,15 +465,18 @@
             }, {
                 view: "button",
                 label: "Add Column",
+                autowidth: true,
                 click: add
             }, {
                 view: "button",
                 label: "Remove Column",
                 css: "webix_danger",
+                autowidth: true,
                 click: remove
             }, {
                 view: "button",
                 label: "Refresh Column",
+                autowidth: true,
                 click: refresh
             }, {}]
         }
@@ -659,38 +589,33 @@
         }
 
         webix.ui({
-            view: "popup",
-            id: "mypopup",
-            body: [{
-                view: "form",
-                id: "editform",
-                elements: [{
-                    view: "text",
-                    name: "Nama"
-                }]
-            }]
-        })
-
-        webix.ready(() => {
-            webix.ui({
-                view: "scrollview",
-                scrollX: true,
-                body: {
-                    rows: [
-                        mytoolbar, {
-                            cols: [
-                                sidebar, {
-                                    rows: [
-                                        mytable,
-                                        mypager
+            view: "scrollview",
+            scrollX: true,
+            body: {
+                rows: [
+                    mytoolbar, {
+                        cols: [
+                            sidebar, {
+                                id: "multiview",
+                                cells: [{
+                                    id: "tables",
+                                    cols: [{
+                                            rows: [
+                                                mytable,
+                                                mypager
+                                            ]
+                                        },
+                                        myform
                                     ]
-                                },
-                                myform
-                            ]
-                        }
-                    ]
-                }
-            })
+                                }, {
+                                    id: "formbasic",
+                                    template: "hay"
+                                }]
+                            }
+                        ]
+                    }
+                ]
+            }
         })
     </script>
 </body>
